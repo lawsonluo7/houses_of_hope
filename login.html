@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Houses of Hope</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <style>
+      :root {
+        --bg: #2a3f21;
+        --panel: #9cc5a1;
+        --panel-border: rgba(33, 48, 59, 0.12);
+        --primary: #2d6a4f;
+        --primary-dark: #1f4d3a;
+        --accent: #e5f0d9;
+        --text: #1d2a2f;
+        --error: #9c2b2b;
+        --success: #255d3c;
+        --shadow: rgba(24, 41, 46, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        height: 100%;
+        font-family: Arial, Helvetica, sans-serif;
+        background-image: url("bg.jpg");
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        color: var(--text);
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .login-shell {
+        width: min(520px, 100%);
+        background: rgba(156, 197, 161, 0.96);
+        border: 1px solid var(--panel-border);
+        border-radius: 24px;
+        box-shadow: 0 20px 44px var(--shadow);
+        padding: 32px 28px 24px;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .brand img {
+        width: min(220px, 60vw);
+        height: auto;
+        margin-bottom: 12px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        letter-spacing: 0.02em;
+      }
+
+      .subtitle {
+        margin: 10px 0 0;
+        font-size: 1rem;
+        color: rgba(29, 42, 47, 0.8);
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      label {
+        font-weight: 700;
+        font-size: 0.96rem;
+      }
+
+      input {
+        width: 100%;
+        border: 1px solid rgba(29, 42, 47, 0.18);
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 1rem;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 2px;
+      }
+
+      .checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(29, 42, 47, 0.8);
+        font-size: 0.9rem;
+      }
+
+      .checkbox input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--primary);
+      }
+
+      .link {
+        color: var(--primary-dark);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .link:hover {
+        text-decoration: underline;
+      }
+
+      button {
+        margin-top: 6px;
+        border: none;
+        background: var(--primary);
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 15px 18px;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+
+      button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+      }
+
+      .message {
+        min-height: 22px;
+        margin-top: 2px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--success);
+      }
+
+      .message.error {
+        color: var(--error);
+      }
+
+      .bottom-text {
+        margin-top: 18px;
+        text-align: center;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="login-shell">
+      <div class="brand" aria-label="Houses of Hope branding">
+        <img src="logo.png" alt="Houses of Hope logo" />
+        <h1>Welcome back</h1>
+        <p class="subtitle">Sign in to help families find safe shelter.</p>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" required />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="Enter your password" required />
+        </div>
+
+        <div class="row">
+          <label class="checkbox" for="rememberMe">
+            <input id="rememberMe" type="checkbox" />
+            <span>Remember me</span>
+          </label>
+          <a class="link" href="create-account.html">Create account</a>
+        </div>
+
+        <button type="submit">Log In</button>
+        <div id="message" class="message" role="alert" aria-live="polite"></div>
+      </form>
+
+      <p class="bottom-text">
+        Need help? <a class="link" href="index.html">Return home</a>
+      </p>
+    </main>
+
+    <script src="User.js"></script>
+    <script>
+      const loginForm = document.getElementById("loginForm");
+      const messageEl = document.getElementById("message");
+
+      function setMessage(text, isError = false) {
+        messageEl.textContent = text;
+        messageEl.classList.toggle("error", isError);
+      }
+
+      async function readAccounts() {
+        try {
+          const response = await fetch("accounts.json", { cache: "no-store" });
+          if (!response.ok) throw new Error("Missing accounts file");
+          const text = await response.text();
+          return text.trim() ? JSON.parse(text) : [];
+        } catch (error) {
+          const fallback = JSON.parse(localStorage.getItem("accountsFallback") || "[]");
+          return Array.isArray(fallback) ? fallback : [];
+        }
+      }
+
+      async function saveAccounts(users) {
+        const payload = JSON.stringify(users, null, 2);
+
+        try {
+          await fetch("accounts.json", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: payload
+          });
+        } catch (error) {
+          localStorage.setItem("accountsFallback", JSON.stringify(users));
+        }
+      }
+
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const password = document.getElementById("password").value;
+
+        if (!email || !password) {
+          setMessage("Please enter both email and password.", true);
+          return;
+        }
+
+        const accounts = await readAccounts();
+        const userRecord = accounts.find((user) => (user.email || "").toLowerCase() === email);
+
+        if (!userRecord) {
+          setMessage("No account matches that email.", true);
+          return;
+        }
+
+        const user = User.fromObject(userRecord);
+        const isValid = await user.checkPassword(password);
+
+        if (!isValid) {
+          setMessage("Incorrect password.", true);
+          return;
+        }
+
+        localStorage.setItem("authToken", user.email);
+        localStorage.setItem("loggedInUser", JSON.stringify({ name: user.name, email: user.email }));
+        localStorage.setItem("lastLoginEmail", user.email);
+
+        setMessage("Login successful.");
+        window.location.href = "index.html";
+      });
+    </script>
+  </body>
+</html>

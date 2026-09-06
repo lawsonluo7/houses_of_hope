@@ -1,0 +1,23 @@
+[
+  {
+    "name": "demo1",
+    "email": "emp@gmail.com",
+    "password": "1408653977",
+    "listedShelters": [],
+    "needsShelter": true,
+    "shelterRequest": {
+      "contactInfo": {
+        "name": "demo1",
+        "email": "emp@gmail.com",
+        "phone": "4255204742"
+      },
+      "peopleCount": 2,
+      "hasPets": false,
+      "openToAnimals": false,
+      "allergies": "asdf",
+      "preferences": "asdf",
+      "canSleepOnCouch": false,
+      "notes": "asdf"
+    }
+  }
+]

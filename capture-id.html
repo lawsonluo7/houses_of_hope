@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In-Browser Camera</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; }
+        video, canvas { width: 100%; max-width: 400px; display: block; margin: 10px auto; border: 2px solid #333; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <h2>Live Camera View</h2>
+    <!-- This plays the live camera feed -->
+    <video id="webcam" autoplay playsinline></video>
+    
+    <button id="snap">Snap Photo</button>
+    
+    <!-- This hidden canvas converts the video frame into a picture -->
+    <canvas id="canvas" style="display:none;"></canvas>
+    
+    <h2>Resulting Image</h2>
+    <!-- This holds the final snapped picture -->
+    <img id="photo" alt="Your photo will appear here">
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const snapButton = document.getElementById('snap');
+        const photo = document.getElementById('photo');
+
+        // 1. Request access to the user's camera
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error accessing camera: ", err);
+                alert("Could not access camera. Please check permissions.");
+            });
+
+        // 2. Capture a frame from the live video stream
+        snapButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            
+            // Match canvas size to the actual streaming video dimensions
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw the current video frame onto the canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas data into a viewable image URL
+            const imageData = canvas.toDataURL('image/png');
+            photo.setAttribute('src', imageData);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shelters Nearby | Houses of Hope</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <style>
+      :root {
+        --bg: #2a3f21;
+        --panel: #9cc5a1;
+        --panel-border: rgba(33, 48, 59, 0.12);
+        --primary: #2d6a4f;
+        --primary-dark: #1f4d3a;
+        --text: #1d2a2f;
+        --error: #9c2b2b;
+        --success: #255d3c;
+        --shadow: rgba(24, 41, 46, 0.16);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        font-family: Arial, Helvetica, sans-serif;
+        background-image: url("bg.jpg");
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        color: var(--text);
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .page-shell {
+        width: min(980px, 100%);
+        background: rgba(156, 197, 161, 0.96);
+        border: 1px solid var(--panel-border);
+        border-radius: 24px;
+        box-shadow: 0 20px 44px var(--shadow);
+        padding: 28px 24px 24px;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        text-align: center;
+        font-size: clamp(2rem, 4vw, 2.6rem);
+      }
+
+      .subtitle {
+        margin: 0 0 22px;
+        text-align: center;
+        color: rgba(29, 42, 47, 0.8);
+      }
+
+      .message {
+        min-height: 24px;
+        font-weight: 700;
+        color: var(--success);
+        margin-bottom: 12px;
+      }
+
+      .message.error {
+        color: var(--error);
+      }
+
+      .shelter-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .shelter-card {
+        background: rgba(255, 255, 255, 0.42);
+        border: 1px solid rgba(29, 42, 47, 0.14);
+        border-radius: 18px;
+        padding: 16px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .shelter-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(29, 42, 47, 0.08);
+      }
+
+      .shelter-card.active {
+        border-color: rgba(45, 106, 79, 0.4);
+      }
+
+      .shelter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .shelter-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+      }
+
+      .request-button {
+        border: none;
+        border-radius: 10px;
+        background: var(--primary);
+        color: #fff;
+        padding: 9px 12px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .request-button:hover {
+        background: var(--primary-dark);
+      }
+
+      .shelter-meta {
+        margin-top: 6px;
+        color: rgba(29, 42, 47, 0.85);
+      }
+
+      .map-wrapper {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.25s ease, margin-top 0.25s ease;
+      }
+
+      .shelter-card.active .map-wrapper {
+        max-height: 360px;
+        margin-top: 14px;
+      }
+
+      iframe {
+        width: 100%;
+        height: 240px;
+        border: 0;
+        border-radius: 12px;
+      }
+
+      .empty-state {
+        margin: 0;
+        padding: 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.35);
+        color: rgba(29, 42, 47, 0.8);
+      }
+
+      .secondary-link {
+        display: block;
+        text-align: center;
+        margin-top: 16px;
+        color: var(--primary-dark);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .secondary-link:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 640px) {
+        .shelter-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page-shell">
+      <h1>Shelters Nearby</h1>
+      <p class="subtitle">Browse nearby shelter listings and request a spot for your household.</p>
+      <div id="message" class="message" role="alert" aria-live="polite"></div>
+      <div id="shelterList" class="shelter-list"></div>
+      <a class="secondary-link" href="index.html">Back home</a>
+    </main>
+
+    <script src="User.js"></script>
+    <script>
+      const shelterListEl = document.getElementById("shelterList");
+      const messageEl = document.getElementById("message");
+
+      function setMessage(text, isError = false) {
+        messageEl.textContent = text;
+        messageEl.classList.toggle("error", isError);
+      }
+
+      function getLoggedInUser() {
+        const authToken = localStorage.getItem("authToken");
+        if (!authToken) {
+          window.location.href = "login.html";
+          return null;
+        }
+
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "{}");
+        return loggedInUser && loggedInUser.email ? loggedInUser : null;
+      }
+
+      async function readAccounts() {
+        try {
+          const response = await fetch("accounts.json", { cache: "no-store" });
+          if (!response.ok) throw new Error("Missing accounts file");
+          const text = await response.text();
+          return text.trim() ? JSON.parse(text) : [];
+        } catch (error) {
+          const fallback = JSON.parse(localStorage.getItem("accountsFallback") || "[]");
+          return Array.isArray(fallback) ? fallback : [];
+        }
+      }
+
+      async function saveAccounts(users) {
+        const payload = JSON.stringify(users, null, 2);
+
+        try {
+          await fetch("accounts.json", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: payload
+          });
+        } catch (error) {
+          localStorage.setItem("accountsFallback", JSON.stringify(users));
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function renderShelters(accounts) {
+        const shelters = accounts.flatMap((account) => {
+          if (!Array.isArray(account?.listedShelters)) {
+            return [];
+          }
+
+          return account.listedShelters.map((shelter) => ({
+            ...shelter,
+            ownerName: account?.name || "Shelter owner",
+            ownerEmail: account?.email || ""
+          }));
+        });
+
+        if (!shelters.length) {
+          shelterListEl.innerHTML = '<p class="empty-state">No shelters are available yet. Check back soon.</p>';
+          return;
+        }
+
+        shelterListEl.innerHTML = shelters.map((shelter) => {
+          const shelterId = String(shelter?.id ?? "shelter");
+          const address = shelter?.address || "Location unavailable";
+          const ownerName = shelter?.ownerName || "Shelter owner";
+          const ownerEmail = shelter?.ownerEmail || "";
+          const capacity = shelter?.capacity ?? 0;
+          const petText = Array.isArray(shelter?.pets) && shelter.pets.length ? shelter.pets.join(", ") : "No pets listed";
+          const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=14&output=embed`;
+
+          return `
+            <article class="shelter-card" data-shelter-id="${escapeHtml(shelterId)}" data-owner-email="${escapeHtml(ownerEmail)}">
+              <div class="shelter-header">
+                <div class="shelter-name">${escapeHtml(address)}</div>
+                <button type="button" class="request-button" data-shelter-id="${escapeHtml(shelterId)}" data-owner-email="${escapeHtml(ownerEmail)}">Request</button>
+              </div>
+              <div class="shelter-meta"><strong>Owner:</strong> ${escapeHtml(ownerName)}</div>
+              <div class="shelter-meta"><strong>Capacity:</strong> ${capacity}</div>
+              <div class="shelter-meta"><strong>Pets:</strong> ${escapeHtml(petText)}</div>
+              <div class="map-wrapper">
+                <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="${mapUrl}" allowfullscreen></iframe>
+              </div>
+            </article>
+          `;
+        }).join("");
+      }
+
+      async function requestShelter(ownerEmail, shelterId) {
+        const currentUser = getLoggedInUser();
+        if (!currentUser) {
+          return;
+        }
+
+        const accounts = await readAccounts();
+        const requesterIndex = accounts.findIndex((account) => (account.email || "").toLowerCase() === String(currentUser.email || "").toLowerCase());
+        const requester = requesterIndex !== -1 ? User.fromObject(accounts[requesterIndex]) : null;
+        const sourceRequest = requester?.shelterRequest || currentUser.shelterRequest || {};
+
+        const ownerIndex = accounts.findIndex((account) => (account.email || "").toLowerCase() === String(ownerEmail || "").toLowerCase());
+
+        if (ownerIndex === -1) {
+          setMessage("That shelter owner could not be found.", true);
+          return;
+        }
+
+        const owner = User.fromObject(accounts[ownerIndex]);
+        const shelterIndex = owner.listedShelters.findIndex((shelter) => String(shelter?.id ?? "") === String(shelterId || ""));
+
+        if (shelterIndex === -1) {
+          setMessage("That shelter listing is no longer available.", true);
+          return;
+        }
+
+        const shelter = owner.listedShelters[shelterIndex];
+        const request = {
+          id: `request-${Date.now()}`,
+          name: currentUser.name || sourceRequest.contactInfo?.name || "New request",
+          email: currentUser.email || sourceRequest.contactInfo?.email || "",
+          phone: sourceRequest.contactInfo?.phone || currentUser.phone || "",
+          peopleCount: Number(sourceRequest.peopleCount ?? 0) || 0,
+          hasPets: Boolean(sourceRequest.hasPets),
+          openToAnimals: Boolean(sourceRequest.openToAnimals),
+          allergies: sourceRequest.allergies || "",
+          preferences: sourceRequest.preferences || "",
+          canSleepOnCouch: Boolean(sourceRequest.canSleepOnCouch),
+          notes: sourceRequest.notes || "",
+          requestedAt: new Date().toISOString()
+        };
+
+        shelter.requests = Array.isArray(shelter.requests) ? shelter.requests : [];
+        shelter.requests.push(request);
+        accounts[ownerIndex] = owner;
+        await saveAccounts(accounts);
+
+        setMessage("Your request has been sent to the shelter owner.");
+        renderShelters(accounts);
+      }
+
+      shelterListEl.addEventListener("click", async (event) => {
+        const requestButton = event.target.closest(".request-button");
+        if (requestButton) {
+          event.stopPropagation();
+          await requestShelter(requestButton.dataset.ownerEmail, requestButton.dataset.shelterId);
+          return;
+        }
+
+        const card = event.target.closest(".shelter-card");
+        if (card) {
+          card.classList.toggle("active");
+        }
+      });
+
+      (async function loadNearbyShelters() {
+        const accounts = await readAccounts();
+        renderShelters(accounts);
+      })();
+    </script>
+  </body>
+</html>

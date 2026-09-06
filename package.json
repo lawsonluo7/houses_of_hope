@@ -1,0 +1,12 @@
+{
+  "name": "houses-of-hope",
+  "version": "1.0.0",
+  "description": "Local dev server for Houses of Hope hackathon",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
